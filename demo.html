@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="./dist/vue.js"></script>
+    <style>
+      #app{
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform:translate(-50%,-50%)
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <p>{{msg}}</p>
+      <span>插值表达式:1+2={{1+2}}</span>
+      <p v-text="info"></p>
+      <input type="text" v-model="info"> </br>
+      <p>计数器:{{count}}</p>
+      <button @click="handleClick">点击+1</button>
+    </div>
+    <script>
+      var vm = new Vue({
+        el:'#app',
+        data:{
+          msg:'hello world',
+          count:0,
+          info:'双向绑定'
+        },
+        methods:{
+          handleClick:function(){
+            this.count++;
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
