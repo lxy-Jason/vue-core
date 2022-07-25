@@ -3,9 +3,13 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <script src="./dist/vue.js"></script>
+    <script src="./vue.js"></script>
     <style>
       #app{
+        background-color: skyblue;
+        padding: 10px;
+        width: 300px;
+        height: 300px;
         position: absolute;
         left: 50%;
         top: 50%;
@@ -18,7 +22,8 @@
       <p>{{msg}}</p>
       <span>插值表达式:1+2={{1+2}}</span>
       <p v-text="info"></p>
-      <input type="text" v-model="info"> </br>
+      <p>{{info1}}</p>
+      <input type="text" v-model="info1"> </br>
       <p>计数器:{{count}}</p>
       <button @click="handleClick">点击+1</button>
     </div>
@@ -28,7 +33,8 @@
         data:{
           msg:'hello world',
           count:0,
-          info:'双向绑定'
+          info:'v-text实现',
+          info1:'v-model实现'
         },
         methods:{
           handleClick:function(){
