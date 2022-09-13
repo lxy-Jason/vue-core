@@ -3,9 +3,9 @@ import Dep from './dep'
 class Observer {
   constructor(data) {
     //Object,definePrototype只能劫持已经存在的属性
-    Object.defineProperty(data,'__ob__',{
-      value:this,
-      enumerable:false//不可枚举
+    Object.defineProperty(data, '__ob__', {
+      value: this,
+      enumerable: false//不可枚举
     })
     // data.__ob__ = this //把Observer放在data上
     //给数据加上一个标识,如果有__ob__则说明这个属性被观测过
@@ -25,7 +25,7 @@ class Observer {
     //"重新定义" 属性
     Object.keys(data).forEach(key => defineReactive(data, key, data[key]))
   }
-  observeArray(data){
+  observeArray(data) {
     data.forEach(item => observe(item))
   }
 }
@@ -36,7 +36,7 @@ export function defineReactive(target, key, value) { //闭包 属性劫持
   let dep = new Dep(); //每个属性都有一个Dep
   Object.defineProperty(target, key, {
     get() {
-      if(dep.target){
+      if (Dep.target) { //静态变量就一个
         dep.depend() //添加watcher
       }
       return value
@@ -45,6 +45,7 @@ export function defineReactive(target, key, value) { //闭包 属性劫持
       if (newValue === value) return
       observe(newValue)
       value = newValue
+      dep.notify(); //通知更新
     }
   })
 }
@@ -54,9 +55,9 @@ export function observe(data) {
   if (typeof data !== 'object' || data === null) {
     return
   }
-  
+
   //如果一个对象被劫持过了,就不需要再劫持
-  if(data.__ob__ instanceof Observer){
+  if (data.__ob__ instanceof Observer) {
     return data.__ob__
   }
   //要判断一个对象是否被劫持过,可以添加一个实例,用实例来判断

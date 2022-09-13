@@ -51,7 +51,7 @@ function patch(oldVnode, vnode) {
 
 export function initLifeCycle() {
   Vue.prototype._update = function (vnode) {//将vnode转换成真实dom
-    console.log(vnode);//虚拟dom
+    // console.log(vnode);//虚拟dom
 
     const vm = this;
     const el = vm.$el;
@@ -83,7 +83,8 @@ export function mountComponent(vm, el) {
   const updateComponet = () => {
     vm._update(vm._render())
   }
-  new Watcher(vm,updateComponet,true) //true表示渲染过程
+  const watcher= new Watcher(vm,updateComponet,true) //true表示渲染过程
+  console.log(watcher);
 }
 
 /**
