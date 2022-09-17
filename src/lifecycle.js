@@ -86,7 +86,13 @@ export function mountComponent(vm, el) {
   const watcher= new Watcher(vm,updateComponet,true) //true表示渲染过程
   console.log(watcher);
 }
+export function callHook(vm,hook){ //调用钩子函数
 
+  const handlers = vm.$options[hook];
+  if(handlers) {
+    handlers.forEach(handler => handler.call(vm))
+  }
+}
 /**
  * vue的核心流程
  * 1.创造响应式数据

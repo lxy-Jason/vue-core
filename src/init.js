@@ -1,16 +1,22 @@
 import { compileToFunction } from "./compiler"
-import { mountComponent } from "./lifecycle"
+import { callHook, mountComponent } from "./lifecycle"
 import { initState } from "./start"
+import { mergeOptions } from "./utils"
 
 export function initMixin(Vue){ //给Vue增加init方法
   Vue.prototype._init = function(options){
     //初始化操作
     const vm = this
     //$options 将用户选项配置到实例上
-    vm.$options = options
-
+    //我们定义的全局指令和过滤器...都会挂载在实例上
+    vm.$options = mergeOptions(this.constructor.options,options)
+    
+    //初始化之前
+    callHook(vm,'beforeCreate')
     //初始化状态
     initState(vm)
+    //之后
+    callHook(vm,'created')
 
     if(options.el){
       vm.$mount(options.el) //实现数据的挂载
