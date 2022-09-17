@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div>
+    <div id = "app" class="nb" style="color: red; font-size:16px">
+      <div style="color:blue">{{name}} hello {{age}} hello</div>
+      <span key="111">{{age}}</span>
+      <span>{{age}}</span>
+      <div>test</div>
+    </div>
+  </div>
+  <script src="vue.js"></script>
+  <script>
+    const vm = new Vue({
+      data() {
+        return {
+          name: 'zf',
+          age: 20,
+          address:{
+            num:30,
+            content:'550'
+          },
+          hobby:['abc','ddd',{a:1}]
+        }
+      },
+      // el:'#app' //将数据解析到el元素上
+    })
+    vm.$mount('#app') //和上面的一个意思
+    //1.模板引擎 性能差 需要正则匹配替换 1.0的时候没有引入虚拟DOM
+    //2.采用虚拟DOM,数据变化后比较虚拟DOM的差异,最后更新需要更新的地方
+    //3.核心是需要将模板变成我们的js语法,通过js语法生成虚拟DOM
+
+    // setTimeout(() => {
+    //   vm.name = 'jw';
+    //   vm.age  = 30
+    //   vm.age  = 20
+    //   vm.age  = 40
+        
+    //   vm._update(vm._render())
+    // },1000)
+
+    vm.name = 'jw'
+    //nextTick不是创建了一个异步任务,而是将这个任务维护到队列中而已
+    vm.$nextTick(() => {
+      console.log(app.innerHTML);
+    })
+    
+  </script>
+</body>
+
+</html>

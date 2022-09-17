@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div>
+    <div id = "app" class="nb" style="color: red; font-size:16px">
+      <div style="color:blue">{{name}} hello {{age}} hello</div>
+      <span key="111">{{age}}</span>
+      <span>{{age}}</span>
+      <div>test</div>
+    </div>
+  </div>
+  <script src="vue.js"></script>
+  <script>
+    Vue.mixin({
+      created(){
+        console.log('mixin-created');
+      },
+    })
+    Vue.mixin({
+      created(){
+        console.log('mixin-created');
+      },
+    })
+    console.log(Vue.options);
+    const vm = new Vue({
+      data() {
+        return {
+          name: 'zf',
+          age: 20,
+          address:{
+            num:30,
+            content:'550'
+          },
+          hobby:['abc','ddd',{a:1}]
+        }
+      },
+      created(){
+        console.log('test');
+      }
+      // el:'#app' //将数据解析到el元素上
+    })
+   
+    
+  </script>
+</body>
+
+</html>

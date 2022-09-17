@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div></div>
+  <script src="vue.js"></script>
+  <script>
+    const vm = new Vue({
+      data() {
+        return {
+          name: 'zf',
+          age: 20,
+          address:{
+            num:30,
+            content:'550'
+          },
+          hobby:['abc','ddd',{a:1}]
+        }
+      }
+    })
+    console.log(vm);
+    vm.name = 'abc'
+    console.log(vm.name);
+    vm.address = {
+      num:20
+    }
+    console.log(vm.address);
+    
+    console.log(vm.hobby[2].a);
+    vm.hobby.push({b:1})
+    console.log(vm);
+  </script>
+</body>
+
+</html>
