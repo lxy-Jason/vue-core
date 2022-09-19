@@ -84,7 +84,6 @@ export function mountComponent(vm, el) {
     vm._update(vm._render())
   }
   const watcher= new Watcher(vm,updateComponet,true) //true表示渲染过程
-  console.log(watcher);
 }
 export function callHook(vm,hook){ //调用钩子函数
 

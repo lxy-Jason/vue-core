@@ -2,6 +2,10 @@ import { newArrayProto } from "./array"
 import Dep from './dep'
 class Observer {
   constructor(data) {
+    //这个data可能是array和object
+    //给每个对象都增加收集功能
+    this.dep = new Dep()
+
     //Object,definePrototype只能劫持已经存在的属性
     Object.defineProperty(data, '__ob__', {
       value: this,
@@ -29,15 +33,34 @@ class Observer {
     data.forEach(item => observe(item))
   }
 }
+//多次嵌套递归性能差,不存在的属性监控不到,存在的属性要重写方法 所以vue3用proxy还是好
+function dependArray(value){
+  for(let i = 0; i < value.length; i++){
+    let current = value[i]
+    current.__ob__ && current.__ob__.dep.depend()
+    if(Array.isArray(current)){ //如果还是数组
+      dependArray(current) //递归收集依赖
+    }
+  }
+}
 
 export function defineReactive(target, key, value) { //闭包 属性劫持 
   //value可能还是对象
-  observe(value)
+  let childOb = observe(value) //childOb.dep用来收集依赖
   let dep = new Dep(); //每个属性都有一个Dep
   Object.defineProperty(target, key, {
     get() {
       if (Dep.target) { //静态变量就一个
         dep.depend() //添加watcher
+        console.log();
+
+        if(childOb){
+          childOb.dep.depend(); //让数组和对象本身也进行依赖收集
+
+          if(Array.isArray(value)){//如果是数组
+            dependArray(value)
+          }
+        }
       }
       return value
     },

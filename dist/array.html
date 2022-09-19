@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="app">
+    {{arr}}
+  </div>
+  <script src="vue.js"></script>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        arr: [1, 2, 3,{a:1},['a','b']],
+      }
+    })
+    setTimeout(() => {
+      // vm.obj.a = 100
+      // vm.arr.push(111)
+      // vm.arr[4].push('c')
+      console.log(vm.arr[4].push('c'));
+      // vm.obj.__ob__.dep.notify()      //$set原理
+    }, 1000)
+    //注意,这个是要运行项目的
+
+  </script>
+</body>
+
+</html>

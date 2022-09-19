@@ -32,7 +32,6 @@ class Watcher { //不同组件有不同watcher
     // console.log('update');
   }
   run() {
-    console.log('run');
     this.get()
   }
 }
@@ -68,7 +67,6 @@ function flushCallbacks() {//最后一起更新
   waiting = false;
   let cbs = callbacks.slice(0)
   callbacks = []
-  console.log(1);
   cbs.forEach(cb => cb()) //按照顺序依次执行
 }
 

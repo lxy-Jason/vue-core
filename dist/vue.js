@@ -494,7 +494,6 @@
     }, {
       key: "run",
       value: function run() {
-        console.log('run');
         this.get();
       }
     }]);
@@ -538,7 +537,6 @@
     waiting = false;
     var cbs = callbacks.slice(0);
     callbacks = [];
-    console.log(1);
     cbs.forEach(function (cb) {
       return cb();
     }); //按照顺序依次执行
@@ -707,9 +705,7 @@
       vm._update(vm._render());
     };
 
-    var watcher = new Watcher(vm, updateComponet, true); //true表示渲染过程
-
-    console.log(watcher);
+    new Watcher(vm, updateComponet, true); //true表示渲染过程
   }
   function callHook(vm, hook) {
     //调用钩子函数
@@ -767,8 +763,10 @@
         //inserted是一个数组
         //新增的内容再次观测
         ob.observeArray(inserted);
-      }
+      } //数组改变,通知对应的Watcher实现更新逻辑
 
+
+      ob.dep.notify();
       return result;
     };
   });
@@ -777,7 +775,10 @@
     function Observer(data) {
       _classCallCheck(this, Observer);
 
-      //Object,definePrototype只能劫持已经存在的属性
+      //这个data可能是array和object
+      //给每个对象都增加收集功能
+      this.dep = new Dep(); //Object,definePrototype只能劫持已经存在的属性
+
       Object.defineProperty(data, '__ob__', {
         value: this,
         enumerable: false //不可枚举
@@ -814,12 +815,26 @@
     }]);
 
     return Observer;
-  }();
+  }(); //多次嵌套递归性能差,不存在的属性监控不到,存在的属性要重写方法 所以vue3用proxy还是好
+
+
+  function dependArray(value) {
+    for (var i = 0; i < value.length; i++) {
+      var current = value[i];
+      current.__ob__ && current.__ob__.dep.depend();
+
+      if (Array.isArray(current)) {
+        //如果还是数组
+        dependArray(current); //递归收集依赖
+      }
+    }
+  }
 
   function defineReactive(target, key, value) {
     //闭包 属性劫持 
     //value可能还是对象
-    observe(value);
+    var childOb = observe(value); //childOb.dep用来收集依赖
+
     var dep = new Dep(); //每个属性都有一个Dep
 
     Object.defineProperty(target, key, {
@@ -827,6 +842,17 @@
         if (Dep.target) {
           //静态变量就一个
           dep.depend(); //添加watcher
+
+          console.log();
+
+          if (childOb) {
+            childOb.dep.depend(); //让数组和对象本身也进行依赖收集
+
+            if (Array.isArray(value)) {
+              //如果是数组
+              dependArray(value);
+            }
+          }
         }
 
         return value;

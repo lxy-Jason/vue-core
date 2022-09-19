@@ -18,7 +18,6 @@ methods.forEach(method => {
   newArrayProto[method] = function (...args) {//重写数组方法
 
     const result = oldArrayProto[method].call(this, ...args)  //内部调用原来的方法   函数的劫持 
-
     //对新增的数据再次进行劫持
     let inserted
     let ob = this.__ob__ //this是在vm上使用arr.push中的arr
@@ -37,6 +36,8 @@ methods.forEach(method => {
       //新增的内容再次观测
       ob.observeArray(inserted)
     }
+    //数组改变,通知对应的Watcher实现更新逻辑
+    ob.dep.notify()
     return result
   }
 })
