@@ -1,4 +1,4 @@
-import Dep from "./dep";
+import Dep, { popTarget, pushTarget } from "./dep";
 
 let id = 0
 
@@ -9,7 +9,11 @@ class Watcher { //不同组件有不同watcher
     this.getter = fn; //getter意味着调用这个函数可以发生取值操作
     this.deps = [];//后续实现计算属性和一些清理工作需要使用到
     this.depsId = new Set() //去重
-    this.get()
+    this.lazy = options.lazy;
+    this.dirty = this.lazy; // 缓存值
+    this.vm = vm
+
+    this.lazy ? undefined : this.get()
   }
   addDep(dep) {
     //一个组件对应多个属性,重复的属性不用记录
@@ -21,15 +25,34 @@ class Watcher { //不同组件有不同watcher
       dep.addSub(this)
     }
   }
+  evaluate() {
+    this.value = this.get(); //获取到用户函数的返回值,并且标识为脏
+    this.dirty = false
+  }
   get() {
-    Dep.target = this; //静态属性
-    this.getter(); // 会去vm上取值
-    Dep.target = null; //清空 
+    pushTarget(this); //静态属性
+    let value = this.getter.call(this.vm); // 会去vm上取值
+    popTarget(); //清空 
+    return value
+  }
+  depend(){
+    let i = this.deps.length;
+    while(i--){
+      this.deps[i].depend() //让计算属性watcher也收集渲染watcher
+    }
   }
   update() {
-    // this.get() //重新渲染
-    queueWatcher(this);//把当前的Watcher的暂存起来
-    // console.log('update');
+    if (this.lazy) {
+      //如果是计算属性,watcher上会有dirty
+      //当依赖更新时,标记计算属性为脏值
+      this.dirty = true
+    }
+    else {
+      // this.get() //重新渲染
+      queueWatcher(this);//把当前的Watcher的暂存起来
+      // console.log('update');
+    }
+
   }
   run() {
     this.get()
@@ -94,11 +117,11 @@ export function nextTick(cb) {
       textNode.textContent = 2 //这里修改文本节点的值,前面的监控就会发现,从而调用回调函数,达到异步调用flushCallbacks的目的
     }
   }
-  else if (setImmediate){
+  else if (setImmediate) {
     timerFunc = () => {
       setImmediate(flushCallbacks)
     }
-  }else{
+  } else {
     timerFunc = () => {
       setTimeout(flushCallbacks)
     }
