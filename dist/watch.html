@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="app">
+    {{firstname}}
+  </div>
+  <script src="vue.js"></script>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        firstname: 'Jason',
+        lastname: 'Lee',
+        age: 20
+      },
+      methods:{
+        fn(newVal,oldVal){
+          console.log(newVal,oldVal);
+        }
+      },
+      watch:{
+        firstname(){
+          console.log('ok');
+        }
+      },
+    })
+    vm.$watch(() => vm.firstname,(newVal,oldVal) => {
+      console.log();
+    })
+    setTimeout(() => {
+      console.log(111);
+      vm.firstname = 'yue'
+    }, 1000)
+
+
+  </script>
+</body>
+
+</html>

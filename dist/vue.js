@@ -929,19 +929,50 @@
       //计算属性
       initComputed(vm);
     }
+
+    if (opts.watch) {
+      initWatch(vm);
+    }
+  }
+
+  function initWatch(vm) {
+    var watch = vm.$options.watch;
+
+    for (var key in watch) {
+      var handler = watch[key]; //字符串 数组 函数三种可能还有对象,暂不考虑
+
+      if (Array.isArray(handler)) {
+        for (var i = 0; i < handler.length; i++) {
+          createWatcher(vm, key, handler[i]);
+        }
+      } else {
+        createWatcher(vm, key, handler);
+      }
+    }
+  }
+
+  function createWatcher(vm, key, handler) {
+    //字符串   函数
+    if (typeof handler === 'string') {
+      handler = vm[handler]; //这里得到一个函数？
+
+      console.log(handler);
+    }
+
+    return vm.$watch(key, handler);
   }
 
   function initData(vm) {
     var data = vm.$options.data; //data可能是函数和对象
 
-    data = typeof data === 'function' ? data.call(vm) : data; //对数据进行劫持  vue2里采用了一个api defineProperty
+    data = typeof data === "function" ? data.call(vm) : data; //对数据进行劫持  vue2里采用了一个api defineProperty
 
     observe(data);
     vm._data = data; //将返回的对象放在_data上
     // 将vm._data 用vm来代理
 
     for (var key in data) {
-      proxy(vm, '_data', key);
+      proxy(vm, "_data", key);
     }
   }
 
@@ -965,7 +996,7 @@
     for (var key in computed) {
       var userDef = computed[key]; //我们需要监控计算属性中get的变化
 
-      var fn = typeof userDef === 'function' ? userDef : userDef.get;
+      var fn = typeof userDef === "function" ? userDef : userDef.get;
       watchers[key] = new Watcher(vm, fn, {
         lazy: true
       });
@@ -989,7 +1020,7 @@
   function createComputedGetter(key) {
     //需要检测是否要执行这个getter
     return function () {
-      var watcher = this._computedWatchers[key]; //获取到对应属性的watcher 
+      var watcher = this._computedWatchers[key]; //获取到对应属性的watcher
 
       if (watcher.dirty) {
         //如果是脏的就去执行用户传入的函数
@@ -1062,7 +1093,12 @@
   initMixin(Vue); //扩展了init方法
 
   initLifeCycle();
-  initGlobalAPI(Vue);
+  initGlobalAPI(Vue); //watchx底层都是调用这个api
+
+  Vue.prototype.$watch = function (exprOrFn, cb) {
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    console.log(exprOrFn, cb, options);
+  };
 
   return Vue;
 
