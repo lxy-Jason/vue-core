@@ -457,12 +457,19 @@
 
   var Watcher = /*#__PURE__*/function () {
     //不同组件有不同watcher
-    function Watcher(vm, fn, options) {
+    function Watcher(vm, exprOrFn, options, cb) {
       _classCallCheck(this, Watcher);
 
       this.id = id++;
       this.renderWatcher = options;
-      this.getter = fn; //getter意味着调用这个函数可以发生取值操作
+
+      if (typeof exprOrFn === "string") {
+        this.getter = function () {
+          return vm[exprOrFn]; //这里读取到的也是一个函数
+        };
+      } else {
+        this.getter = exprOrFn; //getter意味着调用这个函数可以发生取值操作
+      }
 
       this.deps = []; //后续实现计算属性和一些清理工作需要使用到
 
@@ -472,7 +479,10 @@
       this.dirty = this.lazy; // 缓存值
 
       this.vm = vm;
-      this.lazy ? undefined : this.get();
+      this.cb = cb;
+      this.user = options.user; //标识是不是用户自己的watcher
+
+      this.value = this.lazy ? undefined : this.get();
     }
 
     _createClass(Watcher, [{
@@ -531,7 +541,12 @@
     }, {
       key: "run",
       value: function run() {
-        this.get();
+        var oldValue = this.value;
+        var newValue = this.get(); //渲染的时候用的是最新的vm来渲染
+
+        if (this.user) {
+          this.cb.call(this.vm, newValue, oldValue);
+        }
       }
     }]);
 
@@ -1093,11 +1108,15 @@
   initMixin(Vue); //扩展了init方法
 
   initLifeCycle();
-  initGlobalAPI(Vue); //watchx底层都是调用这个api
+  initGlobalAPI(Vue); //watch底层都是调用这个api
 
   Vue.prototype.$watch = function (exprOrFn, cb) {
-    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    console.log(exprOrFn, cb, options);
+    // console.log(exprOrFn,cb,options);
+    //exprOrFn有两种可能值,字符串和函数
+    //firstname的值变化了,直接执行cb函数
+    new Watcher(this, exprOrFn, {
+      user: true
+    }, cb);
   };
 
   return Vue;
