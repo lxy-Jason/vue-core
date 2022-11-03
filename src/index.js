@@ -1,26 +1,36 @@
+import { compileToFunction } from "./compiler";
 import { initGlobalAPI } from "./globalAPI";
 import { initMixin } from "./init";
 import { initLifeCycle } from "./lifecycle";
-import Watcher, { nextTick } from "./observe/watcher";
+import { initStateMixin } from "./state";
+import { createElm } from "./vdom/patch";
 
 function Vue(options) {
   //options就是用户的选项
   this._init(options);
 }
 
-Vue.prototype.$nextTick = nextTick;
+
 
 initMixin(Vue); //扩展了init方法
-initLifeCycle(Vue);
-initGlobalAPI(Vue);
+initLifeCycle(Vue); //vm._update  vm._render
+initGlobalAPI(Vue); //全局api的实现
+initStateMixin(Vue);  //实现nextTick $watch
 
-//watch底层都是调用这个api
-Vue.prototype.$watch = function (exprOrFn, cb) {
-  // console.log(exprOrFn,cb,options);
-  //exprOrFn有两种可能值,字符串和函数
+// ---测试代码
+let render1 = compileToFunction(`<li>{{name}}</li>`);
+let vm1 = new Vue({
+  data:{name:'zf'}
+})
+let prevVonde = render1.call(vm1)
+let el = createElm(prevVonde)
+document.body.appendChild(el)
 
-  //firstname的值变化了,直接执行cb函数
-  new Watcher(this,exprOrFn,{user:true},cb)
-};
+
+let render2 = compileToFunction(`<li>{{name}}</li>`);
+let vm2 = new Vue({
+  data:{name:'zf'}
+})
+let nextVonde = render2.call(vm2)
 
 export default Vue;

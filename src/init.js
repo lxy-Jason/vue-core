@@ -1,6 +1,6 @@
 import { compileToFunction } from "./compiler"
 import { callHook, mountComponent } from "./lifecycle"
-import { initState } from "./start"
+import { initState } from "./state"
 import { mergeOptions } from "./utils"
 
 export function initMixin(Vue){ //给Vue增加init方法

@@ -4,62 +4,6 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Vue = factory());
 })(this, (function () { 'use strict';
 
-  var strats = {};
-  var LIFECYCLE = ["beforeCreate", "created"];
-  LIFECYCLE.forEach(function (hook) {
-    strats[hook] = function (p, c) {
-      //{} {created:function(){}} => {created:[fn]}
-      //{created:[fn]} {created:function(){}} => {created:[fn.fn]}
-      if (c) {
-        if (p) {
-          return p.concat(c); // 如果儿子有,父亲有,父亲一定是个数组
-        } else {
-          return [c]; //儿子有,父亲没有,将儿子包装成数组
-        }
-      } else {
-        return p; //没有儿子直接用父亲
-      }
-    };
-  });
-  function mergeOptions(parent, child) {
-    var options = {};
-
-    for (var key in parent) {
-      //循环老的
-      mergeField(key);
-    }
-
-    for (var _key in child) {
-      //循环新的
-      if (!parent.hasOwnProperty(_key)) {
-        //老的中没有再合并
-        mergeField(_key);
-      }
-    }
-
-    function mergeField(key) {
-      //策略模式 用策略模式减少if / else
-      if (strats[key]) {
-        options[key] = strats[key](parent[key], child[key]);
-      } else {
-        options[key] = child[key] || parent[key]; //优先使用child
-      }
-    }
-
-    return options;
-  }
-
-  function initGlobalAPI(Vue) {
-    //静态属性
-    Vue.options = {};
-
-    Vue.mixin = function (mixin) {
-      // 将用户选项和全局options进行合并
-      this.options = mergeOptions(this.options, mixin);
-      return this;
-    };
-  }
-
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
@@ -405,6 +349,62 @@
     return render;
   }
 
+  var strats = {};
+  var LIFECYCLE = ["beforeCreate", "created"];
+  LIFECYCLE.forEach(function (hook) {
+    strats[hook] = function (p, c) {
+      //{} {created:function(){}} => {created:[fn]}
+      //{created:[fn]} {created:function(){}} => {created:[fn.fn]}
+      if (c) {
+        if (p) {
+          return p.concat(c); // 如果儿子有,父亲有,父亲一定是个数组
+        } else {
+          return [c]; //儿子有,父亲没有,将儿子包装成数组
+        }
+      } else {
+        return p; //没有儿子直接用父亲
+      }
+    };
+  });
+  function mergeOptions(parent, child) {
+    var options = {};
+
+    for (var key in parent) {
+      //循环老的
+      mergeField(key);
+    }
+
+    for (var _key in child) {
+      //循环新的
+      if (!parent.hasOwnProperty(_key)) {
+        //老的中没有再合并
+        mergeField(_key);
+      }
+    }
+
+    function mergeField(key) {
+      //策略模式 用策略模式减少if / else
+      if (strats[key]) {
+        options[key] = strats[key](parent[key], child[key]);
+      } else {
+        options[key] = child[key] || parent[key]; //优先使用child
+      }
+    }
+
+    return options;
+  }
+
+  function initGlobalAPI(Vue) {
+    //静态属性
+    Vue.options = {};
+
+    Vue.mixin = function (mixin) {
+      // 将用户选项和全局options进行合并
+      this.options = mergeOptions(this.options, mixin);
+      return this;
+    };
+  }
+
   var id$1 = 0;
 
   var Dep = /*#__PURE__*/function () {
@@ -667,6 +667,7 @@
     };
   }
 
+  //生成真实dom
   function createElm(vnode) {
     var tag = vnode.tag,
         data = vnode.data,
@@ -686,7 +687,7 @@
     }
 
     return vnode.el;
-  }
+  } //比较属性
 
   function patchProps(el, props) {
     for (var key in props) {
@@ -698,7 +699,7 @@
         el.setAttribute(key, props[key]);
       }
     }
-  }
+  } //比较vnode
 
   function patch(oldVnode, vnode) {
     //初渲染判断
@@ -968,7 +969,7 @@
 
   function createWatcher(vm, key, handler) {
     //字符串   函数
-    if (typeof handler === 'string') {
+    if (typeof handler === "string") {
       handler = vm[handler]; //这里得到一个函数？
 
       console.log(handler);
@@ -1051,6 +1052,19 @@
     };
   }
 
+  function initStateMixin(Vue) {
+    Vue.prototype.$nextTick = nextTick; //watch底层都是调用这个api
+
+    Vue.prototype.$watch = function (exprOrFn, cb) {
+      // console.log(exprOrFn,cb,options);
+      //exprOrFn有两种可能值,字符串和函数
+      //firstname的值变化了,直接执行cb函数
+      new Watcher(this, exprOrFn, {
+        user: true
+      }, cb);
+    };
+  }
+
   function initMixin(Vue) {
     //给Vue增加init方法
     Vue.prototype._init = function (options) {
@@ -1104,20 +1118,31 @@
     this._init(options);
   }
 
-  Vue.prototype.$nextTick = nextTick;
   initMixin(Vue); //扩展了init方法
 
-  initLifeCycle();
-  initGlobalAPI(Vue); //watch底层都是调用这个api
+  initLifeCycle(); //vm._update  vm._render
 
-  Vue.prototype.$watch = function (exprOrFn, cb) {
-    // console.log(exprOrFn,cb,options);
-    //exprOrFn有两种可能值,字符串和函数
-    //firstname的值变化了,直接执行cb函数
-    new Watcher(this, exprOrFn, {
-      user: true
-    }, cb);
-  };
+  initGlobalAPI(Vue); //全局api的实现
+
+  initStateMixin(Vue); //实现nextTick $watch
+  // ---测试代码
+
+  var render1 = compileToFunction("<li>{{name}}</li>");
+  var vm1 = new Vue({
+    data: {
+      name: 'zf'
+    }
+  });
+  var prevVonde = render1.call(vm1);
+  var el = createElm(prevVonde);
+  document.body.appendChild(el);
+  var render2 = compileToFunction("<li>{{name}}</li>");
+  var vm2 = new Vue({
+    data: {
+      name: 'zf'
+    }
+  });
+  render2.call(vm2);
 
   return Vue;
 
