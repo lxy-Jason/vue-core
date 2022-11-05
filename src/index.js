@@ -3,7 +3,7 @@ import { initGlobalAPI } from "./globalAPI";
 import { initMixin } from "./init";
 import { initLifeCycle } from "./lifecycle";
 import { initStateMixin } from "./state";
-import { createElm } from "./vdom/patch";
+import { createElm, patch } from "./vdom/patch";
 
 function Vue(options) {
   //options就是用户的选项
@@ -18,7 +18,7 @@ initGlobalAPI(Vue); //全局api的实现
 initStateMixin(Vue);  //实现nextTick $watch
 
 // ---测试代码
-let render1 = compileToFunction(`<li>{{name}}</li>`);
+let render1 = compileToFunction(`<li key="a" style="color:red">{{name}}</li>`);
 let vm1 = new Vue({
   data:{name:'zf'}
 })
@@ -27,10 +27,15 @@ let el = createElm(prevVonde)
 document.body.appendChild(el)
 
 
-let render2 = compileToFunction(`<li>{{name}}</li>`);
+let render2 = compileToFunction(`<li key="a" style="color:red;background:blue" >{{name}}</li>`);
 let vm2 = new Vue({
   data:{name:'zf'}
 })
 let nextVonde = render2.call(vm2)
+
+setTimeout(() => {
+  patch(prevVonde,nextVonde);
+
+}, 1000);
 
 export default Vue;

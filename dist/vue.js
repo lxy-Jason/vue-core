@@ -667,17 +667,20 @@
     };
   }
 
-  //生成真实dom
+  function isSameVnode(vnode1, vnode2) {
+    return vnode1.tag === vnode2.tag && vnode1.key === vnode2.key;
+  }
+
   function createElm(vnode) {
     var tag = vnode.tag,
         data = vnode.data,
         children = vnode.children,
         text = vnode.text;
 
-    if (typeof tag === 'string') {
+    if (typeof tag === "string") {
       vnode.el = document.createElement(tag); //这里将真实节点和虚拟节点对应起来,后续如果修改了属性,方便获取
 
-      patchProps(vnode.el, data);
+      patchProps(vnode.el, {}, data);
       children.forEach(function (child) {
         return vnode.el.appendChild(createElm(child));
       });
@@ -689,14 +692,34 @@
     return vnode.el;
   } //比较属性
 
-  function patchProps(el, props) {
-    for (var key in props) {
-      if (key === 'style') {
+  function patchProps(el, oldProps, props) {
+    //老的属性中有,新的没有,就要删除老的
+    var oldStyles = oldProps.style || {};
+    var newStyles = props.style || {};
+
+    for (var key in oldStyles) {
+      //老的样式中有,新的没有就删除
+      if (!newStyles[key]) {
+        el.style[key] = '';
+      }
+    }
+
+    for (var _key in oldProps) {
+      //老的属性中有
+      if (!props[_key]) {
+        //新的没有就删除
+        el.removeAttribute(_key);
+      }
+    }
+
+    for (var _key2 in props) {
+      //用新的覆盖老的
+      if (_key2 === "style") {
         for (var styleName in props.style) {
           el.style[styleName] = props.style[styleName];
         }
       } else {
-        el.setAttribute(key, props[key]);
+        el.setAttribute(_key2, props[_key2]);
       }
     }
   } //比较vnode
@@ -717,7 +740,37 @@
       parentElm.removeChild(elm); //删除老节点
 
       return newElm;
+    } else {
+      //diff算法
+      //1.两个节点不是同一个节点,直接删除老的换上新的
+      //2.两个节点是同一个节点(判断tag和key) 比较两个节点的属性是否有差异
+      //复用老的节点,将差异的属性更换
+      //3.节点比较完毕就需要比较子元素
+      return patchVnode(oldVnode, vnode);
     }
+  }
+
+  function patchVnode(oldVnode, vnode) {
+    if (!isSameVnode(oldVnode, vnode)) {
+      //不同直接用老节点的父节点替换该节点
+      var _el = createElm(vnode);
+
+      oldVnode.el.parentNode.replaceChild(_el, oldVnode.el);
+      return _el;
+    } //文本的情况
+
+
+    var el = vnode.el = oldVnode.el; //复用老节点的元素
+
+    if (!oldVnode.tag) {
+      //没有tag属性说明是文本
+      if (oldVnode.text === vnode.text) {
+        el.textContent = vnode.text; //用新的文本覆盖老的
+      }
+    } //是标签 要比较标签的属性
+
+
+    patchProps(el, oldVnode.data, vnode.data); //比较子节点,两种可能,一方有子节点一方没有,双方都有
   }
 
   function initLifeCycle() {
@@ -1127,7 +1180,7 @@
   initStateMixin(Vue); //实现nextTick $watch
   // ---测试代码
 
-  var render1 = compileToFunction("<li>{{name}}</li>");
+  var render1 = compileToFunction("<li key=\"a\" style=\"color:red\">{{name}}</li>");
   var vm1 = new Vue({
     data: {
       name: 'zf'
@@ -1136,13 +1189,16 @@
   var prevVonde = render1.call(vm1);
   var el = createElm(prevVonde);
   document.body.appendChild(el);
-  var render2 = compileToFunction("<li>{{name}}</li>");
+  var render2 = compileToFunction("<li key=\"a\" style=\"color:red;background:blue\" >{{name}}</li>");
   var vm2 = new Vue({
     data: {
       name: 'zf'
     }
   });
-  render2.call(vm2);
+  var nextVonde = render2.call(vm2);
+  setTimeout(function () {
+    patch(prevVonde, nextVonde);
+  }, 1000);
 
   return Vue;
 
