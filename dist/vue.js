@@ -771,6 +771,41 @@
 
 
     patchProps(el, oldVnode.data, vnode.data); //比较子节点,两种可能,一方有子节点一方没有,双方都有
+
+    var oldChildren = oldVnode.children || [];
+    var newChildren = vnode.children || [];
+
+    if (oldChildren.length > 0 && newChildren.length > 0) {
+      //完整的diff算法
+      updateChildren(el, oldChildren, newChildren);
+    } else if (newChildren.length > 0) {
+      //没有老的只有新的,只需要添加
+      mountChildren(el, newChildren);
+      return el;
+    } else if (oldChildren.length > 0) {
+      //新的没有,老的有,就要删除
+      el.innerHTML = ''; //直接清空
+    }
+
+    return el;
+  } //将children转成真实dom然后添加在el中
+
+
+  function mountChildren(el, newChildren) {
+    for (var i = 0; i < newChildren.length; i++) {
+      var child = newChildren[i];
+      el.appendChild(createElm(child));
+    }
+  }
+
+  function updateChildren(el, oldChildren, newChildren) {
+    var oldEndIndex = oldChildren.length - 1;
+    var newEndIndex = newChildren.length - 1; //双指针对应的dom节点
+
+    oldChildren[0];
+    newChildren[0];
+    oldChildren[oldEndIndex];
+    newChildren[newEndIndex]; // console.log(oldStartVnode);
   }
 
   function initLifeCycle() {
@@ -1180,7 +1215,7 @@
   initStateMixin(Vue); //实现nextTick $watch
   // ---测试代码
 
-  var render1 = compileToFunction("<li key=\"a\" style=\"color:red\">{{name}}</li>");
+  var render1 = compileToFunction("<ul  style=\"color:red\">\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n</ul>");
   var vm1 = new Vue({
     data: {
       name: 'zf'
@@ -1189,7 +1224,7 @@
   var prevVonde = render1.call(vm1);
   var el = createElm(prevVonde);
   document.body.appendChild(el);
-  var render2 = compileToFunction("<li key=\"a\" style=\"color:red;background:blue\" >{{name}}</li>");
+  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n  <li key=\"d\">d</li>\n</ul>");
   var vm2 = new Vue({
     data: {
       name: 'zf'

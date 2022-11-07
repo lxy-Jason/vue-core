@@ -83,5 +83,50 @@ function patchVnode(oldVnode, vnode) {
   //是标签 要比较标签的属性
   patchProps(el, oldVnode.data, vnode.data);
   //比较子节点,两种可能,一方有子节点一方没有,双方都有
-  
+  let oldChildren = oldVnode.children || [];
+  let newChildren = vnode.children || [];
+  if(oldChildren.length > 0 && newChildren.length > 0){
+    //完整的diff算法
+    updateChildren(el,oldChildren,newChildren);
+  }
+  else if(newChildren.length > 0){
+    //没有老的只有新的,只需要添加
+    mountChildren(el,newChildren)
+    return el;
+  }
+  else if(oldChildren.length > 0){
+    //新的没有,老的有,就要删除
+    el.innerHTML = ''; //直接清空
+  }
+  return el;
+}
+//将children转成真实dom然后添加在el中
+function mountChildren(el,newChildren){
+  for(let i = 0; i < newChildren.length; i++){
+    let child = newChildren[i];
+    el.appendChild(createElm(child));
+  }
+}
+function updateChildren(el,oldChildren,newChildren){
+  // console.log(el,oldChildren,newChildren);
+  //vue2采用双指针的方式
+  //重点在于当一个头指针超过尾指针之后,循环结束
+  let oldStartIndex = 0;
+  let newStartIndex = 0;
+  let oldEndIndex = oldChildren.length - 1;
+  let newEndIndex = newChildren.length - 1; 
+  //双指针对应的dom节点
+  let oldStartVnode = oldChildren[0];
+  let newStartVnode = newChildren[0];
+  let oldEndVnode = oldChildren[oldEndIndex]
+  let newEndVnode = newChildren[newEndIndex]
+
+  // console.log(oldStartVnode);
+  // console.log(newStartVnode);
+  // console.log(oldEndVnode);
+  // console.log(newEndVnode);
+  while(oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex){
+    //双方只有有一方头指针超过尾指针就停止循环
+    
+  }
 }
