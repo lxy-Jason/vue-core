@@ -31,7 +31,7 @@ let el = createElm(prevVonde)
 document.body.appendChild(el)
 
 
-let render2 = compileToFunction(`<ul style="color:red;background:blue" >
+let render2 = compileToFunction(`<ul style="color:red;background:blue" >\
   <li key="a">a</li>
   <li key="b">b</li>
   <li key="c">c</li>

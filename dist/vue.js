@@ -692,7 +692,9 @@
     return vnode.el;
   } //比较属性
 
-  function patchProps(el, oldProps, props) {
+  function patchProps(el) {
+    var oldProps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var props = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     //老的属性中有,新的没有,就要删除老的
     var oldStyles = oldProps.style || {};
     var newStyles = props.style || {};
@@ -700,7 +702,7 @@
     for (var key in oldStyles) {
       //老的样式中有,新的没有就删除
       if (!newStyles[key]) {
-        el.style[key] = '';
+        el.style[key] = "";
       }
     }
 
@@ -784,7 +786,7 @@
       return el;
     } else if (oldChildren.length > 0) {
       //新的没有,老的有,就要删除
-      el.innerHTML = ''; //直接清空
+      el.innerHTML = ""; //直接清空
     }
 
     return el;
@@ -799,13 +801,66 @@
   }
 
   function updateChildren(el, oldChildren, newChildren) {
+    // console.log(el,oldChildren,newChildren);
+    //vue2采用双指针的方式
+    //重点在于当一个头指针超过尾指针之后,循环结束
+    var oldStartIndex = 0;
+    var newStartIndex = 0;
     var oldEndIndex = oldChildren.length - 1;
     var newEndIndex = newChildren.length - 1; //双指针对应的dom节点
 
-    oldChildren[0];
-    newChildren[0];
-    oldChildren[oldEndIndex];
-    newChildren[newEndIndex]; // console.log(oldStartVnode);
+    var oldStartVnode = oldChildren[0];
+    var newStartVnode = newChildren[0];
+    var oldEndVnode = oldChildren[oldEndIndex];
+    var newEndVnode = newChildren[newEndIndex];
+    console.log(oldStartVnode);
+    console.log(newStartVnode);
+    console.log(oldEndVnode);
+    console.log(newEndVnode);
+
+    while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+      //双方只有有一方头指针超过尾指针就停止循环
+      //比较开头节点
+      if (isSameVnode(oldStartVnode, newStartVnode)) {
+        patchVnode(oldStartVnode, newStartVnode); //如果是相同节点就递归比较子节点
+
+        oldStartVnode = oldChildren[++oldStartIndex];
+        newStartVnode = newChildren[++newStartIndex];
+      } //比较结束节点
+
+
+      if (isSameVnode(oldEndIndex, newEndIndex)) {
+        patchVnode(oldEndVnode, newEndVnode); //如果是相同节点就递归比较子节点
+
+        oldEndVnode = oldChildren[--oldEndIndex];
+        newEndVnode = newChildren[--newEndIndex];
+      }
+    } //新的多了,添加新元素
+
+
+    console.log(newStartIndex);
+    console.log(newEndIndex);
+
+    if (newStartIndex <= newEndIndex) {
+      for (var i = newStartIndex; i <= newEndIndex; i++) {
+        var childEl = createElm(newChildren[i]); //这里可能向前追加也可能向后追加
+        //看下一个元素是否存在,存在说明是中途插入,不存在说明是末尾追加
+
+        var anchor = newChildren[newEndIndex + 1] ? newChildren[newEndIndex + 1].el : null; // el.appendChild(childEl);
+
+        console.log(anchor);
+        el.insertBefore(childEl, anchor); //anchor为null,这里的作用就相当于appendChild;
+      }
+    } //老的多了,删除旧元素
+
+
+    if (oldStartIndex <= oldEndIndex) {
+      for (var _i = oldStartIndex; _i <= oldStartIndex; _i++) {
+        var _childEl = oldChildren[_i].el; //拿到要删除的旧节点的el,el中是真实dom
+
+        el.removeChild(_childEl);
+      }
+    }
   }
 
   function initLifeCycle() {
@@ -1224,7 +1279,7 @@
   var prevVonde = render1.call(vm1);
   var el = createElm(prevVonde);
   document.body.appendChild(el);
-  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n  <li key=\"d\">d</li>\n</ul>");
+  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n  <li key=\"d\">d</li>\n</ul>");
   var vm2 = new Vue({
     data: {
       name: 'zf'
