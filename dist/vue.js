@@ -813,10 +813,6 @@
     var newStartVnode = newChildren[0];
     var oldEndVnode = oldChildren[oldEndIndex];
     var newEndVnode = newChildren[newEndIndex];
-    console.log(oldStartVnode);
-    console.log(newStartVnode);
-    console.log(oldEndVnode);
-    console.log(newEndVnode);
 
     while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
       //双方只有有一方头指针超过尾指针就停止循环
@@ -829,7 +825,7 @@
       } //比较结束节点
 
 
-      if (isSameVnode(oldEndIndex, newEndIndex)) {
+      if (isSameVnode(oldEndVnode, newEndVnode)) {
         patchVnode(oldEndVnode, newEndVnode); //如果是相同节点就递归比较子节点
 
         oldEndVnode = oldChildren[--oldEndIndex];
@@ -837,9 +833,6 @@
       }
     } //新的多了,添加新元素
 
-
-    console.log(newStartIndex);
-    console.log(newEndIndex);
 
     if (newStartIndex <= newEndIndex) {
       for (var i = newStartIndex; i <= newEndIndex; i++) {
@@ -1273,16 +1266,16 @@
   var render1 = compileToFunction("<ul  style=\"color:red\">\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n</ul>");
   var vm1 = new Vue({
     data: {
-      name: 'zf'
+      name: "zf"
     }
   });
   var prevVonde = render1.call(vm1);
   var el = createElm(prevVonde);
   document.body.appendChild(el);
-  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n  <li key=\"d\">d</li>\n</ul>");
+  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n  <li key=\"d\">d</li>\n  <li key=\"e\">e</li>\n</ul>");
   var vm2 = new Vue({
     data: {
-      name: 'zf'
+      name: "zf"
     }
   });
   var nextVonde = render2.call(vm2);

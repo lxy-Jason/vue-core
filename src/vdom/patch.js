@@ -122,10 +122,6 @@ function updateChildren(el, oldChildren, newChildren) {
   let oldEndVnode = oldChildren[oldEndIndex];
   let newEndVnode = newChildren[newEndIndex];
 
-  console.log(oldStartVnode);
-  console.log(newStartVnode);
-  console.log(oldEndVnode);
-  console.log(newEndVnode);
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
     //双方只有有一方头指针超过尾指针就停止循环
     //比较开头节点
@@ -135,15 +131,13 @@ function updateChildren(el, oldChildren, newChildren) {
       newStartVnode = newChildren[++newStartIndex];
     }
     //比较结束节点
-    if (isSameVnode(oldEndIndex, newEndIndex)) {
+    if (isSameVnode(oldEndVnode, newEndVnode)) {
       patchVnode(oldEndVnode, newEndVnode); //如果是相同节点就递归比较子节点
       oldEndVnode = oldChildren[--oldEndIndex];
       newEndVnode = newChildren[--newEndIndex];
     }
   }
   //新的多了,添加新元素
-  console.log(newStartIndex);
-  console.log(newEndIndex);
   if (newStartIndex <= newEndIndex) {
     for (let i = newStartIndex; i <= newEndIndex; i++) {
       let childEl = createElm(newChildren[i]);
