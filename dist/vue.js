@@ -818,17 +818,33 @@
       //双方只有有一方头指针超过尾指针就停止循环
       //比较开头节点
       if (isSameVnode(oldStartVnode, newStartVnode)) {
+        //头头
         patchVnode(oldStartVnode, newStartVnode); //如果是相同节点就递归比较子节点
 
         oldStartVnode = oldChildren[++oldStartIndex];
         newStartVnode = newChildren[++newStartIndex];
-      } //比较结束节点
-
-
-      if (isSameVnode(oldEndVnode, newEndVnode)) {
+      } else if (isSameVnode(oldEndVnode, newEndVnode)) {
+        //尾尾
+        //比较结束节点
         patchVnode(oldEndVnode, newEndVnode); //如果是相同节点就递归比较子节点
 
         oldEndVnode = oldChildren[--oldEndIndex];
+        newEndVnode = newChildren[--newEndIndex];
+      } else if (isSameVnode(oldEndVnode, newStartVnode)) {
+        //交叉比对 abcd -> dabc
+        //头尾
+        patchVnode(oldEndVnode, newStartVnode);
+        el.insertBefore(oldEndVnode.el, oldStartVnode.el); //将尾节点放到最前面
+
+        oldEndVnode = oldChildren[--oldEndIndex];
+        newStartVnode = newChildren[++newStartIndex];
+      } else if (isSameVnode(oldStartVnode, newEndVnode)) {
+        //尾头
+        patchVnode(oldStartVnode, newEndVnode); //两个参数的位置要注意
+
+        el.insertBefore(oldStartVnode.el, oldEndVnode.el.nextSibling); //将头指针指向的元素插入到尾指针指向的元素的下一个节点的前面(其实就是尾指针指向元素的后面)
+
+        oldStartVnode = oldChildren[++oldStartIndex];
         newEndVnode = newChildren[--newEndIndex];
       }
     } //新的多了,添加新元素
@@ -1263,7 +1279,7 @@
   initStateMixin(Vue); //实现nextTick $watch
   // ---测试代码
 
-  var render1 = compileToFunction("<ul  style=\"color:red\">\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n</ul>");
+  var render1 = compileToFunction("<ul  style=\"color:red\">\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n  <li key=\"d\">d</li>\n</ul>");
   var vm1 = new Vue({
     data: {
       name: "zf"
@@ -1272,7 +1288,7 @@
   var prevVonde = render1.call(vm1);
   var el = createElm(prevVonde);
   document.body.appendChild(el);
-  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n  <li key=\"d\">d</li>\n  <li key=\"e\">e</li>\n</ul>");
+  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >\n  <li key=\"b\">b</li>\n  <li key=\"d\">d</li>\n  <li key=\"c\">c</li>\n  <li key=\"a\">a</li>\n</ul>");
   var vm2 = new Vue({
     data: {
       name: "zf"

@@ -20,6 +20,7 @@ let render1 = compileToFunction(`<ul  style="color:red">
   <li key="a">a</li>
   <li key="b">b</li>
   <li key="c">c</li>
+  <li key="d">d</li>
 </ul>`);
 let vm1 = new Vue({
   data: { name: "zf" },
@@ -29,11 +30,10 @@ let el = createElm(prevVonde);
 document.body.appendChild(el);
 
 let render2 = compileToFunction(`<ul style="color:red;background:blue" >
-  <li key="a">a</li>
   <li key="b">b</li>
-  <li key="c">c</li>
   <li key="d">d</li>
-  <li key="e">e</li>
+  <li key="c">c</li>
+  <li key="a">a</li>
 </ul>`);
 let vm2 = new Vue({
   data: { name: "zf" },
