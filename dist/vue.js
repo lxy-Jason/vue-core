@@ -814,10 +814,25 @@
     var oldEndVnode = oldChildren[oldEndIndex];
     var newEndVnode = newChildren[newEndIndex];
 
+    function makeIndexByKey(children) {
+      var map = {};
+      children.forEach(function (child, index) {
+        map[child.key] = index;
+      });
+      return map; //映射表
+    }
+
+    var map = makeIndexByKey(oldChildren);
+    console.log(map);
+
     while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
-      //双方只有有一方头指针超过尾指针就停止循环
+      if (!oldStartVnode) {
+        oldStartVnode = oldChildren[++oldStartIndex];
+      } else if (!oldEndVnode) {
+        oldEndVnode = oldChildren[--oldEndIndex];
+      } //双方只有有一方头指针超过尾指针就停止循环
       //比较开头节点
-      if (isSameVnode(oldStartVnode, newStartVnode)) {
+      else if (isSameVnode(oldStartVnode, newStartVnode)) {
         //头头
         patchVnode(oldStartVnode, newStartVnode); //如果是相同节点就递归比较子节点
 
@@ -846,6 +861,24 @@
 
         oldStartVnode = oldChildren[++oldStartIndex];
         newEndVnode = newChildren[--newEndIndex];
+      } else {
+        //乱序比对
+        // 根据老的列表做一个映射关系,用新的去找,找到则移动,找不到就添加,最后多余的删除
+        var moveIndex = map[newStartVnode.key]; //如果拿到则说明是我要移动的索引
+
+        if (moveIndex !== undefined) {
+          var moveVnode = oldChildren[moveIndex]; //找到对应的虚拟节点复用
+
+          el.insertBefore(moveVnode.el, oldStartVnode.el);
+          oldChildren[moveIndex] = undefined; //表示这个节点已经移动
+          // 比对属性和子节点
+
+          patchVnode(moveVnode, newStartVnode);
+        } else {
+          el.insertBefore(createElm(newStartVnode), oldStartVnode.el); //新添加的节点放在老的头指针指向的节点的前面
+        }
+
+        newStartVnode = newChildren[++newStartIndex];
       }
     } //新的多了,添加新元素
 
@@ -865,9 +898,11 @@
 
     if (oldStartIndex <= oldEndIndex) {
       for (var _i = oldStartIndex; _i <= oldStartIndex; _i++) {
-        var _childEl = oldChildren[_i].el; //拿到要删除的旧节点的el,el中是真实dom
+        if (oldChildren[_i]) {
+          var _childEl = oldChildren[_i].el; //拿到要删除的旧节点的el,el中是真实dom
 
-        el.removeChild(_childEl);
+          el.removeChild(_childEl);
+        }
       }
     }
   }
@@ -1288,7 +1323,7 @@
   var prevVonde = render1.call(vm1);
   var el = createElm(prevVonde);
   document.body.appendChild(el);
-  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >\n  <li key=\"b\">b</li>\n  <li key=\"d\">d</li>\n  <li key=\"c\">c</li>\n  <li key=\"a\">a</li>\n</ul>");
+  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >\n  <li key=\"b\">b</li>\n  <li key=\"e\">e</li>\n  <li key=\"g\">g</li>\n  <li key=\"c\">c</li>\n  <li key=\"a\">a</li>\n  <li key=\"f\">f</li>\n</ul>");
   var vm2 = new Vue({
     data: {
       name: "zf"

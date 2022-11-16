@@ -122,10 +122,25 @@ function updateChildren(el, oldChildren, newChildren) {
   let oldEndVnode = oldChildren[oldEndIndex];
   let newEndVnode = newChildren[newEndIndex];
 
+  function makeIndexByKey(children) {
+    let map = {};
+    children.forEach((child, index) => {
+      map[child.key] = index;
+    });
+    return map; //映射表
+  }
+  let map = makeIndexByKey(oldChildren);
+  console.log(map);
+
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    if (!oldStartVnode) {
+      oldStartVnode = oldChildren[++oldStartIndex];
+    } else if (!oldEndVnode) {
+      oldEndVnode = oldChildren[--oldEndIndex];
+    }
     //双方只有有一方头指针超过尾指针就停止循环
     //比较开头节点
-    if (isSameVnode(oldStartVnode, newStartVnode)) {
+    else if (isSameVnode(oldStartVnode, newStartVnode)) {
       //头头
       patchVnode(oldStartVnode, newStartVnode); //如果是相同节点就递归比较子节点
       oldStartVnode = oldChildren[++oldStartIndex];
@@ -150,6 +165,20 @@ function updateChildren(el, oldChildren, newChildren) {
       //将头指针指向的元素插入到尾指针指向的元素的下一个节点的前面(其实就是尾指针指向元素的后面)
       oldStartVnode = oldChildren[++oldStartIndex];
       newEndVnode = newChildren[--newEndIndex];
+    } else {
+      //乱序比对
+      // 根据老的列表做一个映射关系,用新的去找,找到则移动,找不到就添加,最后多余的删除
+      let moveIndex = map[newStartVnode.key]; //如果拿到则说明是我要移动的索引
+      if (moveIndex !== undefined) {
+        let moveVnode = oldChildren[moveIndex]; //找到对应的虚拟节点复用
+        el.insertBefore(moveVnode.el, oldStartVnode.el);
+        oldChildren[moveIndex] = undefined; //表示这个节点已经移动
+        // 比对属性和子节点
+        patchVnode(moveVnode, newStartVnode);
+      } else {
+        el.insertBefore(createElm(newStartVnode), oldStartVnode.el); //新添加的节点放在老的头指针指向的节点的前面
+      }
+      newStartVnode = newChildren[++newStartIndex];
     }
   }
   //新的多了,添加新元素
@@ -169,8 +198,10 @@ function updateChildren(el, oldChildren, newChildren) {
   //老的多了,删除旧元素
   if (oldStartIndex <= oldEndIndex) {
     for (let i = oldStartIndex; i <= oldStartIndex; i++) {
-      let childEl = oldChildren[i].el; //拿到要删除的旧节点的el,el中是真实dom
-      el.removeChild(childEl);
+      if (oldChildren[i]) {
+        let childEl = oldChildren[i].el; //拿到要删除的旧节点的el,el中是真实dom
+        el.removeChild(childEl);
+      }
     }
   }
 }

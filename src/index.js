@@ -31,9 +31,11 @@ document.body.appendChild(el);
 
 let render2 = compileToFunction(`<ul style="color:red;background:blue" >
   <li key="b">b</li>
-  <li key="d">d</li>
+  <li key="e">e</li>
+  <li key="g">g</li>
   <li key="c">c</li>
   <li key="a">a</li>
+  <li key="f">f</li>
 </ul>`);
 let vm2 = new Vue({
   data: { name: "zf" },
