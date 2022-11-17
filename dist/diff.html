@@ -10,8 +10,24 @@
 
 <body>
   <div id="app">
+    <span>{{name}}</span>
   </div>
   <script src="vue.js"></script>
-</body>
+  <script>
+    const vm = new Vue({
+      el:'#app',
+      data(){
+        return {
+          name:'zf'
+        }
+      }
+    });
+    setTimeout(() => {
+      console.log(vm.name);
+      vm.name = 'jw'
+      console.log(vm.name);
+    },1000)
 
+  </script>
+</body>
 </html>

@@ -766,8 +766,10 @@
 
     if (!oldVnode.tag) {
       //没有tag属性说明是文本
-      if (oldVnode.text === vnode.text) {
+      if (oldVnode.text !== vnode.text) {
         el.textContent = vnode.text; //用新的文本覆盖老的
+
+        console.log(el.textContent, 1);
       }
     } //是标签 要比较标签的属性
 
@@ -823,7 +825,6 @@
     }
 
     var map = makeIndexByKey(oldChildren);
-    console.log(map);
 
     while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
       if (!oldStartVnode) {
@@ -912,10 +913,19 @@
       //将vnode转换成真实dom
       // console.log(vnode);//虚拟dom
       var vm = this;
-      var el = vm.$el; // console.log(el);
-      //patch既有初始化的功能,又有更新的功能
+      var el = vm.$el;
+      var prevVnode = vm._vnode;
+      vm._vnode = vnode; //把组件第一次产生的虚拟节点保存到_vnode的上面
 
-      vm.$el = patch(el, vnode);
+      if (prevVnode) {
+        //之前渲染过了
+        vm.$el = patch(prevVnode, vnode);
+      } else {
+        //第一次渲染 
+        // console.log(el);
+        //patch既有初始化的功能,又有更新的功能
+        vm.$el = patch(el, vnode);
+      }
     };
 
     Vue.prototype._c = function () {
@@ -927,7 +937,7 @@
     };
 
     Vue.prototype._s = function (value) {
-      if (_typeof(value) !== 'object') return value;
+      if (_typeof(value) !== "object") return value;
       return JSON.stringify(value);
     };
 
@@ -1312,27 +1322,6 @@
   initGlobalAPI(Vue); //全局api的实现
 
   initStateMixin(Vue); //实现nextTick $watch
-  // ---测试代码
-
-  var render1 = compileToFunction("<ul  style=\"color:red\">\n  <li key=\"a\">a</li>\n  <li key=\"b\">b</li>\n  <li key=\"c\">c</li>\n  <li key=\"d\">d</li>\n</ul>");
-  var vm1 = new Vue({
-    data: {
-      name: "zf"
-    }
-  });
-  var prevVonde = render1.call(vm1);
-  var el = createElm(prevVonde);
-  document.body.appendChild(el);
-  var render2 = compileToFunction("<ul style=\"color:red;background:blue\" >\n  <li key=\"b\">b</li>\n  <li key=\"e\">e</li>\n  <li key=\"g\">g</li>\n  <li key=\"c\">c</li>\n  <li key=\"a\">a</li>\n  <li key=\"f\">f</li>\n</ul>");
-  var vm2 = new Vue({
-    data: {
-      name: "zf"
-    }
-  });
-  var nextVonde = render2.call(vm2);
-  setTimeout(function () {
-    patch(prevVonde, nextVonde);
-  }, 1000);
 
   return Vue;
 

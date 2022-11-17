@@ -64,7 +64,6 @@ export function patch(oldVnode, vnode) {
     //2.两个节点是同一个节点(判断tag和key) 比较两个节点的属性是否有差异
     //复用老的节点,将差异的属性更换
     //3.节点比较完毕就需要比较子元素
-
     return patchVnode(oldVnode, vnode);
   }
 }
@@ -79,8 +78,9 @@ function patchVnode(oldVnode, vnode) {
   let el = (vnode.el = oldVnode.el); //复用老节点的元素
   if (!oldVnode.tag) {
     //没有tag属性说明是文本
-    if (oldVnode.text === vnode.text) {
+    if (oldVnode.text !== vnode.text) { 
       el.textContent = vnode.text; //用新的文本覆盖老的
+      console.log(el.textContent,1);
     }
   }
   //是标签 要比较标签的属性
@@ -130,7 +130,6 @@ function updateChildren(el, oldChildren, newChildren) {
     return map; //映射表
   }
   let map = makeIndexByKey(oldChildren);
-  console.log(map);
 
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
     if (!oldStartVnode) {
